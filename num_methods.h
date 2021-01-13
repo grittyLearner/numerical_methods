@@ -1,7 +1,7 @@
 /*============================================================
 
 
-Name: yprime.h
+Name: num_methods.h
 
 Author: Louis Horner
 
@@ -26,7 +26,7 @@ const long double pi = 3.14159265358979323846;
 class Yprime
 {
 protected:
-	// function pointer yprime wich is f(x, y) = dy/dx
+	// function pointer yprime which is f(x, y) = dy/dx
 	long double (*yprime)(const long double&, const long double&);
 	// function pointer Y wich is the exact solution 
 	long double (*Y)(const long double&);
