@@ -35,13 +35,15 @@ protected:
 	long double gy;
 	// X is the x-coordinate of the point we wish to approximate
 	long double X;
+	// value to determine whether an exact solution was given
+	bool is_def_Y;
 public:
 	/* constructors:  Yprime (yprime, [Y], x, y, X)
 	where
 	x and y are the initial conditions
 	h is the step size */
-	Yprime (long double (*f)(const long double&, const long double&), const long double& cx, const long double& cy, const long double& cX) : yprime(f), gx(cx), gy(cy), X(cX) {}
-	Yprime (long double (*f)(const long double&, const long double&), long double (*cY)(const long double&), const long double& cx, const long double& cy, const long double& cX) : yprime(f), Y(cY), gx(cx), gy(cy), X(cX) {}
+	Yprime (long double (*f)(const long double&, const long double&), const long double& cx, const long double& cy, const long double& cX) : yprime(f), gx(cx), gy(cy), X(cX) {is_def_Y = 0;}
+	Yprime (long double (*f)(const long double&, const long double&), long double (*cY)(const long double&), const long double& cx, const long double& cy, const long double& cX) : yprime(f), Y(cY), gx(cx), gy(cy), X(cX) {is_def_Y = 1;}
 
 	// Eulers method
 	void eulers (const long double& h)
@@ -54,7 +56,7 @@ public:
 			ly += h*(*yprime)(lx, ly); 
 			lx += h;
 			std::cout << "(" << lx << ", " << ly << "); ";
-			std::cout << "absolute error: " << ( ((*Y)(lx) - ly > 0 )? ((*Y)(lx) - ly) : -1*((*Y)(lx) - ly)) << "\n";
+			if (is_def_Y) { std::cout << "absolute error: " << ( ((*Y)(lx) - ly > 0 )? ((*Y)(lx) - ly) : -1*((*Y)(lx) - ly)) << "\n"; }
 		}   
 		std::cout << "\n";
 	}
@@ -72,7 +74,7 @@ public:
 			ly += (((*yprime)(lx, ly) + (*yprime)( (lx+h), ys))/2)*h;
 			lx += h;
 			std::cout << "(" << lx << ", " << ly << "); ";
-			std::cout << "absolute error: " << ( ((*Y)(lx) - ly > 0 )? ((*Y)(lx) - ly) : -1*((*Y)(lx) - ly)) << "\n";
+			if (is_def_Y) { std::cout << "absolute error: " << ( ((*Y)(lx) - ly > 0 )? ((*Y)(lx) - ly) : -1*((*Y)(lx) - ly)) << "\n"; }
 		}
 		std::cout << "\n";
 	}
@@ -92,7 +94,7 @@ public:
 			ly += (h/6)*(k1 + 2*k2 + 2*k3 + k4);
 			lx += h;
 			std::cout << "(" << lx << ", " << ly << "); ";
-			std::cout << "absolute error: " << ( ((*Y)(lx) - ly > 0 )? ((*Y)(lx) - ly) : -1*((*Y)(lx) - ly)) << "\n";
+			if (is_def_Y) { std::cout << "absolute error: " << ( ((*Y)(lx) - ly > 0 )? ((*Y)(lx) - ly) : -1*((*Y)(lx) - ly)) << "\n"; }
 		}
 		std::cout << "\n";
 	}
@@ -113,6 +115,7 @@ public:
 	// Adams–Bashforth–Moulton method
 	void abm (long double h)
 	{
+		std::cout << "Adams-Bashforth-Moulton Method:\n";
 		long double YY [4];
 		long double * y = YY;
 		// y_n values: [n-3, n-2, n-1, n]
@@ -129,13 +132,8 @@ public:
 		{
 			*(y+i) = this->RK4o(h);
 			*(yp+i) = (*yprime)(gx, gy);
-{			// printing
-			std::cout << "x_" << i << ": " << gx << "\n";
-			std::cout << "y_" << i << ": " << *y << "\n";
-			std::cout << "y_" << i << ": " << gy << "\n";
-			std::cout << "y_" << i << "': " << *yp << "\n";
-			std::cout << "absolute error: " << ( ((*Y)(gx) - gy > 0 )? ((*Y)(gx) - gy) : -1*((*Y)(gx) - gy)) << "\n\n";
-}
+			std::cout << "(" << gx << ", " << *(y+i) << "), ";
+			if (is_def_Y) { std::cout << "absolute error: " << ( ((*Y)(gx) - gy > 0 )? ((*Y)(gx) - gy) : -1*((*Y)(gx) - gy)) << "\n"; }
 		}
 
 		// X-(h/2) is so that the next step doesn't run
@@ -144,9 +142,6 @@ public:
 			// ys is y_{n+1}^*
 			long double ys = *(y+3) + (h/24)*( 55*(*(yp+3)) - 59*(*(yp+2)) + 37*(*(yp+1)) - 9*(*(yp)) );
 
-{			// printing
-			std::cout << "y_" << i+1 << "^*: " << ys << "\n";
-}
 			gy += (h/24)*( 9*((*yprime)(gx+h, ys)) + 19*(*(yp+3)) - 5*(*(yp+2)) + (*(yp+1)) );
 
 			// shifting y values to clear space for y_{n+1}
@@ -163,13 +158,8 @@ public:
 			gx += h;
 			*(yp+3) = (*yprime)(gx, *(y+3));
 
-{			// printing
-			std::cout << "y_" << i << ": " << *(y+3) << "\n";
-			std::cout << "y_" << i << ": " << gy << "\n";
-			std::cout << "x_" << i << ": " << gx << "\n";
-			std::cout << "absolute error: " << ( ((*Y)(gx) - gy > 0 )? ((*Y)(gx) - gy) : -1*((*Y)(gx) - gy)) << "\n";
-			std::cout << "X: " << X << "\n\n";
-}
+			std::cout << "(" << gx << ", " << *(y+i) << "), ";
+			if (is_def_Y) { std::cout << "absolute error: " << ( ((*Y)(gx) - gy > 0 )? ((*Y)(gx) - gy) : -1*((*Y)(gx) - gy)) << "\n"; }
 		}
 	}
 };
