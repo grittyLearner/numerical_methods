@@ -5,7 +5,7 @@ Name: numerical_methods.h
 
 Author: Louis Horner
 
-Date: January 18, 2021
+Date: January 1, 2021
 
 Description:
 	Here we define three classes, below, to approximate three
