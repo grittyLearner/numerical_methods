@@ -5,7 +5,7 @@ Name: numerical_methods.h
 
 Author: Louis Horner
 
-Date: January 18, 2021
+Date: January 17, 2021
 
 Description:
 	Here we define three classes, below, to approximate three
@@ -76,7 +76,7 @@ fstOrderSys
 		rk4(h)
 			4th order Runge-Kutta method
 			h is the step size
-			returns x_n
+			returns a pointer to an array: [x_n, y_n, [error in x_n], [error in y_n]]
 
 ============================================================*/
 
@@ -447,7 +447,7 @@ public:
 		is_def_Y = 1;
 	}
 	// 4th order Runge-Kutta method
-	long double rk4 (long double h)
+	long double * rk4 (long double h)
 	{
 		std::cout << "4th order Runge-Kutta method applied to a system of first order differential equations: (h = " << h << ")\n";
 		// local variables so the class ones are not modified
@@ -456,6 +456,17 @@ public:
 		long double lt = t;
 		long double k [4];
 		long double m [4];
+
+		// return value: a pointer to an array: [x_n, y_n, [error in x_n], [error in y_n]]
+		long double * final_values;
+		if (is_def_Y)
+		{
+			final_values = new long double [4];
+		}
+		else
+		{
+			final_values = new long double [2];
+		}
 
 		for (;(T-(h/2)) > lt;) 
 		{   
@@ -479,12 +490,20 @@ public:
 			std::cout << "(t, x, y): " << "(" << lt << ", " << lx << ", " << ly << ")\n";
 			std::cout << "error in x: " << ( ((*X)(lt) - lx > 0 )? ((*X)(lt) - lx ) : -1*((*X)(lt) - lx)) << "\n";
 			std::cout << "error in y: " << ( ((*Y)(lt) - ly > 0 )? ((*Y)(lt) - ly ) : -1*((*Y)(lt) - ly)) << "\n\n";
+			// return values
+			final_values[0] = lx;
+			final_values[1] = ly;
+			final_values[2] = ( ((*X)(lt) - lx > 0 )? ((*X)(lt) - lx ) : -1*((*X)(lt) - lx));
+			final_values[3] = ( ((*Y)(lt) - ly > 0 )? ((*Y)(lt) - ly ) : -1*((*Y)(lt) - ly));
 		}
 		else
 		{
 			std::cout << "(t, x, y): " << "(" << lt << ", " << lx << ", " << ly << ")\n\n";
+			// return values
+			final_values[0] = lx;
+			final_values[1] = ly;
 		}
 
-		return lx;
+		return final_values;
 	}
 };
